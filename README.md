@@ -3,7 +3,7 @@ We need a RPC to submit our transactions to the network.
 
 If you have your own Flare node, you can use its RPC or you can use a free one provided by Flare.
 
-[Flare api-portal](https://api-portal.flare.network/) offers a free RPC that is limited to 1,000 calls a month. That is enough for what we plan to do. Tim Rowley created a great video on [YouTube](https://www.youtube.com/watch?v=YLWK41jzAOs) showing how to set up a Flare api account and get the RPC URL and api key that we need.
+[Flare api-portal](https://api-portal.flare.network/) offers a free RPC that is limited to 30,000 calls a month. That is enough for what we plan to do. Tim Rowley created a great video on [YouTube](https://www.youtube.com/watch?v=YLWK41jzAOs) showing how to set up a Flare api account and get the RPC URL and api key that we need.
 
 # Install and config
 Install need packages
