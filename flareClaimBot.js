@@ -86,8 +86,8 @@ async function processTx(web3, encodedTx){
 	return web3.eth.abi.decodeParameter('uint256', r_data.result);
 }
 
-function getMonthToExpireNext(web3, address) {
-	const encodedTx = createTx(web3, DistributionToDelegators, address, "getMonthToExpireNext()", []);
+function getCurrentMonth(web3, address) {
+	const encodedTx = createTx(web3, DistributionToDelegators, address, "getCurrentMonth()", []);
     return processTx(web3, encodedTx)
 }
 
@@ -194,7 +194,7 @@ async function claimFlareDrop(privateKey, addresses) {
         const web3 = new Web3(flareRPC);
         const publicAddress = await getPublicKey(web3, privateKey)
     
-        const month  = await getMonthToExpireNext(web3, publicAddress);
+        const month  = parseInt(await getCurrentMonth(web3, publicAddress)) - 1;
         for(let i = 0; i <  allAddress.length; i++ ){
             
             if (Web3.utils.isAddress(allAddress[i])) {
