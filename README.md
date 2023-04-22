@@ -31,14 +31,18 @@ Send a small amount of FLR to the public address. It will be used to pay network
 Go to [portal.flare.network](https://portal.flare.network/). Connect your wallet and add the the public address created above as the Executor for that wallet.
 
 # Running bot
-flareClaimBot.js 
-[`delegation`|`drops`] 
-[Private Key]
-[String of addresses separated with a `,`]
+flareClaimBot.js drops [Private Key] [String of addresses separated with a `,`]
+
+flareClaimBot.js delegation [`flare`|`songbird`] [Private Key] [String of addresses separated with a `,`]
 
 ## Claiming delegation rewards
 ```javascript
-node ./flareClaimBot.js delegation 0x9eb31536f80d54f1c6df77ab5585376e492219d377780d90d3c36e6d93ef7d40 0x33C8AAd916cF43d020b3104D4cEc19ba66d6d53d,0x8222f89A712Da616061aB59a23039F2a25Ea5766,0x9D4099E1558EB632954be0Eb97164d34Fd14934E
+node ./flareClaimBot.js delegation flare 0x9eb31536f80d54f1c6df77ab5585376e492219d377780d90d3c36e6d93ef7d40 0x33C8AAd916cF43d020b3104D4cEc19ba66d6d53d,0x8222f89A712Da616061aB59a23039F2a25Ea5766,0x9D4099E1558EB632954be0Eb97164d34Fd14934E
+```
+
+
+```javascript
+node ./flareClaimBot.js delegation songbird 0x9eb31536f80d54f1c6df77ab5585376e492219d377780d90d3c36e6d93ef7d40 0x33C8AAd916cF43d020b3104D4cEc19ba66d6d53d,0x8222f89A712Da616061aB59a23039F2a25Ea5766,0x9D4099E1558EB632954be0Eb97164d34Fd14934E
 ```
 
 ## Claiming flare Drop
