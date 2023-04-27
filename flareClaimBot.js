@@ -1,20 +1,35 @@
 const Web3 = require("web3");
 
 
-let flareRPC = "https://api.flare.network/flare/bc/C/rpc";
-const flareRPCKey = "";
+const flareRPC = "https://api.flare.network/flare/bc/C/rpc";
+const songbirdRPC = "https://api.flare.network/songbird/bc/C/rpc";
+const flareRPCKey = "7wEcYkAeFbRKLx29utbe2ODQyAzwcGVqAtNGuBNWvGWQ5gGO";
 const enableWrapping = 1; //1 = true, 0 = false
 const pullFlareAddresses = true; 
 
 /************************************************
         DO NOT CHANGE BELOW CODE
 ************************************************/
-let DistributionToDelegators = "0x9c7A4C83842B29bB4A082b0E689CB9474BD938d0";
-let FtsoRewardManager = "0x85627d71921AE25769f5370E482AdA5E1e418d37";
-let ClaimSetupManager = "0xD56c0Ea37B848939B59e6F5Cda119b3fA473b5eB";
+const FlareDistributionToDelegators = "0x9c7A4C83842B29bB4A082b0E689CB9474BD938d0";
+const FlareFtsoRewardManager = "0x85627d71921AE25769f5370E482AdA5E1e418d37";
+const FlareClaimSetupManager = "0xD56c0Ea37B848939B59e6F5Cda119b3fA473b5eB";
+
+const SongBirdFtsoRewardManager = "0x13F7866568dC476cC3522d17C23C35FEDc1431C5";
+const SongBirdClaimSetupManager = "0xDD138B38d87b0F95F6c3e13e78FFDF2588F1732d";
+
+let network ="flare";
+let activeRPC = flareRPC;
+let DistributionToDelegators = FlareDistributionToDelegators;
+let FtsoRewardManager = FlareFtsoRewardManager;
+let ClaimSetupManager = FlareClaimSetupManager;
 
 async function getFlareContractAddresses(){
-    const response = await fetch("https://gitlab.com/flarenetwork/flare-smart-contracts/-/raw/flare_network_deployed_code/deployment/deploys/flare.json?inline=false")
+    let response;
+    if(network == "flare"){
+        response = await fetch("https://gitlab.com/flarenetwork/flare-smart-contracts/-/raw/flare_network_deployed_code/deployment/deploys/flare.json?inline=false")
+    } else{
+        response = await fetch("https://gitlab.com/flarenetwork/flare-smart-contracts/-/raw/songbird_network_deployed_code/deployment/deploys/songbird.json?inline=false")
+    }
     const addresses = await response.json()
     for (let i = 0; i < addresses.length; i++) {
         if (addresses[i].name === "DistributionToDelegators") {
@@ -41,7 +56,7 @@ async function getFlareContractAddresses(){
 }
 
 if(flareRPCKey != "") {
-    flareRPC = `${flareRPC}?x-apikey=${flareRPCKey}`
+    activeRPC = `${flareRPC}?x-apikey=${flareRPCKey}`
 }
 
 function createTx(web3, toAddress, fromAddress, functionString, functionInputs){    
@@ -74,7 +89,7 @@ async function processTx(web3, encodedTx){
         }, 'latest']
 	};
 
-	const response = await fetch(flareRPC, {
+	const response = await fetch(activeRPC, {
 		method: 'POST',
 		headers: {
             'Content-Type': 'application/json'
@@ -120,7 +135,7 @@ async function isAllowedToExecute(web3, address, executorAddress){
         }, 'latest']
 	};
     
-	const response = await fetch(flareRPC, {
+	const response = await fetch(activeRPC, {
 		method: 'POST',
 		headers: {
             'Content-Type': 'application/json'
@@ -138,14 +153,26 @@ async function getPublicKey(web3, privateKey) {
     return rt.address;
 }
 
-async function claimDelegationRewards(privateKey, addresses) {
+async function claimDelegationRewards(network_, privateKey, addresses) {
+    if(network_ == "songbird"){
+        network = network_;
+        activeRPC = `${songbirdRPC}?x-apikey=${flareRPCKey}`
+        FtsoRewardManager = SongBirdFtsoRewardManager;
+        ClaimSetupManager = SongBirdClaimSetupManager;
+        DistributionToDelegators= "";
+     } else if (network.toLowerCase() != "flare"){
+        console.error('Error: network not supported');
+        process.exit(1);
+    }
+    console.log(`Network: ${network_}`)
+
 	const allAddress = addresses.split(",");
     if(pullFlareAddresses) {
        await getFlareContractAddresses()
     }
 	
     if(allAddress.length >= 1){
-        const web3 = new Web3(flareRPC);
+        const web3 = new Web3(activeRPC);
         const publicAddress = await getPublicKey(web3, privateKey)
     
         const epochNumber = await getCurrentRewardEpoch(web3, publicAddress);
@@ -191,7 +218,7 @@ async function claimFlareDrop(privateKey, addresses) {
     }    
 	
     if(allAddress.length >= 1){
-        const web3 = new Web3(flareRPC);
+        const web3 = new Web3(activeRPC);
         const publicAddress = await getPublicKey(web3, privateKey)
     
         const month  = parseInt(await getCurrentMonth(web3, publicAddress)) - 1;
@@ -231,7 +258,7 @@ async function claimFlareDrop(privateKey, addresses) {
 }
 
 function generateKeys(){
-    const web3 = new Web3(flareRPC);
+    const web3 = new Web3(activeRPC);
     const newWallet = web3.eth.accounts.create()
     console.log(`Public Key: ${newWallet.address}`)
     console.log(`Private Key: ${newWallet.privateKey}`)
@@ -241,9 +268,9 @@ if(process.argv.length < 3){
     console.error('Error: missing input argument');
     process.exit(1);
 }else{
-    if(process.argv[2].toLowerCase() == 'delegation' && process.argv.length == 5){
-        console.log(`Running Claim Delegation Rewards  Bot`)
-        claimDelegationRewards(process.argv[3], process.argv[4]);
+    if(process.argv[2].toLowerCase() == 'delegation' && process.argv.length == 6){
+        console.log(`Running Claim Delegation Rewards Bot`)
+        claimDelegationRewards(process.argv[3], process.argv[4], process.argv[5]);
     }else if(process.argv[2].toLowerCase() == 'drops' && process.argv.length == 5){
         console.log(`Running Claim Flare Drops Bot`)
         claimFlareDrop(process.argv[3], process.argv[4]);
